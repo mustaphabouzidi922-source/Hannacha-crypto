@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hannacha Crypto | منصة إطلاق العملات</title>
-    <!-- استدعاء المكتبات الصحيحة والثابتة -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.5/axios.min.js"></script>
@@ -51,7 +50,7 @@
                     <input type="number" id="tokenSupply" value="1000000" required class="w-full px-3 py-1.5 bg-black border border-gray-800 rounded-lg text-white text-xs focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-medium mb-1 text-gray-400">أيقونة الشعار:</label>
+                    <label class="block text-[11px] font-medium mb-1 text-gray-400">أيقونة الشعار (اختر أي صورة):</label>
                     <input type="file" id="tokenLogo" accept="image/*" required class="w-full text-xs text-gray-400 file:py-1 file:px-3 file:rounded file:bg-zinc-800 file:text-white file:border-0 cursor-pointer">
                 </div>
 
@@ -100,8 +99,8 @@
             if (!userAddress) { await connectWallet(); return; }
 
             const btn = document.getElementById('actionBtn');
-            btn.disabled = true; btn.innerText = "جاري قراءة ملف الصورة... ⏳";
-
+            btn.disabled = true; 
+            
             const name = document.getElementById('tokenName').value;
             const symbol = document.getElementById('tokenSymbol').value;
             const decimals = parseInt(document.getElementById('tokenDecimals').value);
@@ -115,49 +114,51 @@
             }
 
             try {
+                btn.innerText = "جاري رفع شعار العملة إلى IPFS... ⏳";
                 let formData = new FormData();
                 formData.append('file', logoInput.files[0]);
 
-                btn.innerText = "جاري رفع الصورة إلى شبكة IPFS... ⏳";
-                
-                // التعديل الصحيح والمضبوط لعناوين Pinata الـ API
                 const resFile = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
                     maxBodyLength: 'Infinity',
                     headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${PINATA_JWT}` }
                 });
 
                 const imageUrl = `https://gateway.pinata.cloud/ipfs/${resFile.data.IpfsHash}`;
-                btn.innerText = "جاري تجهيز ميتا-داتا العملة... ⏳";
-
+                
+                btn.innerText = "جاري إنشاء رابط الميتا-داتا الخاص بالعملة... ⏳";
                 const metadata = { name, symbol, decimals, image: imageUrl, description: "Verified by Hannacha Crypto.", verified: true };
+                
                 const resMeta = await axios.post('https://api.pinata.cloud/pinning/pinJSONToIPFS', metadata, {
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${PINATA_JWT}` }
                 });
 
                 const metadataUrl = `https://gateway.pinata.cloud/ipfs/${resMeta.data.IpfsHash}`;
 
-                btn.innerText = "برجاء تأكيد رسوم الـ 0.50$ في المحفظة... 🔓";
+                btn.innerText = "برجاء تأكيد رسوم الصك (0.0008 BNB) في المحفظة... 🔓";
                 const signer = provider.getSigner();
                 const factoryContract = new ethers.Contract(FACTORY_CONTRACT_ADDRESS, FACTORY_ABI, signer);
                 
                 const tokenAmount = ethers.utils.parseUnits(supply, decimals);
-                
+                const exactFee = ethers.utils.parseEther("0.0008");
+
                 const tx = await factoryContract.deployNewToken(
                     name, symbol, decimals, tokenAmount, metadataUrl, 
                     { 
-                        value: ethers.BigNumber.from("800000000000000"),
+                        value: exactFee,
                         gasLimit: ethers.BigNumber.from("3000000")
                     }
                 );
 
-                btn.innerText = "جاري التأكيد على الشبكة... ⛓️";
+                btn.innerText = "جاري التأكيد على شبكة بايننس... ⛓️";
                 await tx.wait();
-                alert("🎉 نجاح باهر! تم صك عملتك الموثقة بالعلامة الخضراء بنجاح بالرسوم الجديدة!");
+                
+                alert("🎉 نجاح باهر! تم صك عملتك الموثقة بالعلامة الخضراء بنجاح!");
                 btn.innerText = "تم الصك بنجاح! ✅";
                 btn.disabled = false;
             } catch (err) {
                 alert("فشلت العملية: " + (err.response?.data?.error || err.message));
-                btn.disabled = false; btn.innerText = "صك العملة وتفعيل التوثيق الأخضر الفوري 🚀";
+                btn.disabled = false; 
+                btn.innerText = "صك العملة وتفعيل التوثيق الأخضر الفوري 🚀";
             }
         }
     </script>
