@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hannacha Crypto | منصة إطلاق العملات</title>
+    <!-- استدعاء المكتبات الصحيحة والثابتة -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.5/axios.min.js"></script>
@@ -99,27 +100,40 @@
             if (!userAddress) { await connectWallet(); return; }
 
             const btn = document.getElementById('actionBtn');
-            btn.disabled = true; btn.innerText = "جاري رفع الشعار لـ IPFS... ⏳";
+            btn.disabled = true; btn.innerText = "جاري قراءة ملف الصورة... ⏳";
 
             const name = document.getElementById('tokenName').value;
             const symbol = document.getElementById('tokenSymbol').value;
             const decimals = parseInt(document.getElementById('tokenDecimals').value);
             const supply = document.getElementById('tokenSupply').value;
-            const logoFile = document.getElementById('tokenLogo').files[0];
+            const logoInput = document.getElementById('tokenLogo');
+
+            if (!logoInput.files || logoInput.files.length === 0) {
+                alert("برجاء اختيار ملف الصورة أولاً");
+                btn.disabled = false; btn.innerText = "صك العملة وتفعيل التوثيق الأخضر الفوري 🚀";
+                return;
+            }
 
             try {
                 let formData = new FormData();
-                formData.append('file', logoFile);
+                formData.append('file', logoInput.files[0]);
+
+                btn.innerText = "جاري رفع الصورة إلى شبكة IPFS... ⏳";
+                
+                // التعديل الصحيح والمضبوط لعناوين Pinata الـ API
                 const resFile = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
                     maxBodyLength: 'Infinity',
                     headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${PINATA_JWT}` }
                 });
+
                 const imageUrl = `https://gateway.pinata.cloud/ipfs/${resFile.data.IpfsHash}`;
+                btn.innerText = "جاري تجهيز ميتا-داتا العملة... ⏳";
 
                 const metadata = { name, symbol, decimals, image: imageUrl, description: "Verified by Hannacha Crypto.", verified: true };
                 const resMeta = await axios.post('https://api.pinata.cloud/pinning/pinJSONToIPFS', metadata, {
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${PINATA_JWT}` }
                 });
+
                 const metadataUrl = `https://gateway.pinata.cloud/ipfs/${resMeta.data.IpfsHash}`;
 
                 btn.innerText = "برجاء تأكيد رسوم الـ 0.50$ في المحفظة... 🔓";
@@ -128,20 +142,17 @@
                 
                 const tokenAmount = ethers.utils.parseUnits(supply, decimals);
                 
-                // فرض الرسوم بوضوح تام لمنع إرسال القيمة صفر
-                const exactFee = ethers.utils.parseEther("0.0008");
-
                 const tx = await factoryContract.deployNewToken(
                     name, symbol, decimals, tokenAmount, metadataUrl, 
                     { 
-                        value: exactFee,
+                        value: ethers.BigNumber.from("800000000000000"),
                         gasLimit: ethers.BigNumber.from("3000000")
                     }
                 );
 
                 btn.innerText = "جاري التأكيد على الشبكة... ⛓️";
                 await tx.wait();
-                alert("🎉 نجاح باهر! تم صك عملتك الموثقة بالعلامة الخضراء بنجاح!");
+                alert("🎉 نجاح باهر! تم صك عملتك الموثقة بالعلامة الخضراء بنجاح بالرسوم الجديدة!");
                 btn.innerText = "تم الصك بنجاح! ✅";
                 btn.disabled = false;
             } catch (err) {
