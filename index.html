@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hannacha Crypto | منصة إطلاق العملات</title>
-    <!-- مكتبات خفيفة متوافقة مع متصفحات الجوال -->
-    <script src="https://jsdelivr.net"></script>
-    <script src="https://jsdelivr.net"></script>
-    <script src="https://tailwindcss.com"></script>
+    <!-- استخدام Tailwind المباشر مع مكتبات Ethers و Axios -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.5/axios.min.js"></script>
     <style>
         .gold-text { color: #D4AF37; }
         .gold-bg { background-color: #D4AF37; }
@@ -86,8 +86,7 @@
         const FACTORY_CONTRACT_ADDRESS = "0xc3d6eb4349ad7b3bb533e85d8dd8baefc76fbebd"; 
         const FACTORY_ABI = ["function deployNewToken(string memory _name, string memory _symbol, uint8 _decimals, uint256 _supply, string memory _tokenURI) external payable returns (address)"];
 
-        // الـ JWT الـخاص بك مدمج بأمان للرفع المباشر من المتصفح
-        const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIwMzFkNjI4Yy1iOGUzLTQzYmUtOWY2NC0wYzBlODI1Zjc1M2QiLCJlbWFpbCI6Im11c3RhcGhhYm91emlkaTkyMkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJGUkExIn0seyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJOWUMxIn1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0..." + "txt"; // تم دمجه واختصاره لسرعة الاستجابة للهاتف
+        const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIwMzFkNjI4Yy1iOGUzLTQzYmUtOWY2NC0wYzBlODI1Zjc1M2QiLCJlbWFpbCI6Im11c3RhcGhhYm91emlkaTkyMkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJGUkExIn0seyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJOWUMxIn1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0..." + "txt";
 
         async function connectWallet() {
             if (window.ethereum) {
@@ -96,8 +95,7 @@
                 userAddress = accounts[0];
                 document.getElementById('connectWalletBtn').innerText = userAddress.substring(0,5) + "..." + userAddress.substring(39);
             } else {
-                // فتح الموقع فوراً وبشكل مباشر داخل تطبيق ميتاماسك أو تراست ووليت على أندرويد
-                window.location.href = "https://app.link" + window.location.host + window.location.pathname;
+                window.location.href = "https://metamask.app.link/dapp/" + window.location.host + window.location.pathname;
             }
         }
 
@@ -115,20 +113,19 @@
             const logoFile = document.getElementById('tokenLogo').files[0];
 
             try {
-                // 1. رفع الصورة مباشرة من الهاتف إلى IPFS باستخدام الـ JWT الخاص بك
                 let formData = new FormData();
                 formData.append('file', logoFile);
-                const resFile = await axios.post('https://pinata.cloud', formData, {
+                const resFile = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
                     maxBodyLength: 'Infinity',
                     headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${PINATA_JWT}` }
                 });
-                const imageUrl = `https://pinata.cloud${resFile.data.IpfsHash}`;
+                const imageUrl = `https://gateway.pinata.cloud/ipfs/${resFile.data.IpfsHash}`;
 
-                // 2. رفع الميتا داتا JSON
                 const metadata = { name, symbol, decimals, image: imageUrl, description: "Verified by Hannacha Crypto.", verified: true };
-                const resMeta = await axios.post('https://pinata.cloud', metadata, {
+                const resMeta = await axios.post('https://api.pinata.cloud/pinning/pinJSONToIPFS', metadata, {
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${PINATA_JWT}` }
                 });
+                const metaUrl = `https://gateway.pinata.cloud/ipfs/${resMeta.data.IpfsHash}`;
 
                 btn.innerText = "تأكيد رسوم الـ 2% في المحفظة... 🔓";
                 const signer = provider.getSigner();
@@ -137,7 +134,7 @@
                 const tx = await factoryContract.deployNewToken(
                     name, symbol, decimals, 
                     ethers.utils.parseUnits(supply, decimals), 
-                    `https://pinata.cloud${resMeta.data.IpfsHash}`,
+                    metaUrl,
                     { value: ethers.utils.parseEther("0.02") }
                 );
 
