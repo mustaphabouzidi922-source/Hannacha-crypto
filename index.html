@@ -93,7 +93,7 @@
             if (window.ethereum) {
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                userAddress = accounts;
+                userAddress = accounts[0];
                 document.getElementById('connectWalletBtn').innerText = userAddress.substring(0,5) + "..." + userAddress.substring(39);
             } else {
                 // فتح الموقع فوراً وبشكل مباشر داخل تطبيق ميتاماسك أو تراست ووليت على أندرويد
@@ -112,7 +112,7 @@
             const symbol = document.getElementById('tokenSymbol').value;
             const decimals = parseInt(document.getElementById('tokenDecimals').value);
             const supply = document.getElementById('tokenSupply').value;
-            const logoFile = document.getElementById('tokenLogo').files;
+            const logoFile = document.getElementById('tokenLogo').files[0];
 
             try {
                 // 1. رفع الصورة مباشرة من الهاتف إلى IPFS باستخدام الـ JWT الخاص بك
@@ -122,7 +122,7 @@
                     maxBodyLength: 'Infinity',
                     headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${PINATA_JWT}` }
                 });
-                const imageUrl = `https://pinata.cloud{resFile.data.IpfsHash}`;
+                const imageUrl = `https://pinata.cloud${resFile.data.IpfsHash}`;
 
                 // 2. رفع الميتا داتا JSON
                 const metadata = { name, symbol, decimals, image: imageUrl, description: "Verified by Hannacha Crypto.", verified: true };
@@ -137,7 +137,7 @@
                 const tx = await factoryContract.deployNewToken(
                     name, symbol, decimals, 
                     ethers.utils.parseUnits(supply, decimals), 
-                    `https://pinata.cloud{resMeta.data.IpfsHash}`,
+                    `https://pinata.cloud${resMeta.data.IpfsHash}`,
                     { value: ethers.utils.parseEther("0.02") }
                 );
 
