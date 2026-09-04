@@ -87,7 +87,6 @@
         let userAddress = null; let provider = null;
         let lastCreatedTokenAddress = null; let lastCreatedTokenSymbol = ""; let lastCreatedTokenDecimals = 18; let lastCreatedTokenLogoUrl = "";
         
-        // 🟢 1. استبدل هذا العنوان بعنون عقد الـ Factory الجديد الذي نشرته للتو في ريمكس
         const FACTORY_CONTRACT_ADDRESS = "0xc3d6eb4349ad7b3bb533e85d8dd8baefc76fbebd"; 
 
         const FACTORY_ABI = [
@@ -95,7 +94,8 @@
             "event ProxyCreated(address indexed proxyAddress, address indexed creator)"
         ];
 
-        const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIwMzFkNjI4Yy1iOGUzLTQzYmUtOWY2NC0wYzBlODI1Zjc1M2QiLCJlbWFpbCI6Im11c3RhcGhhYm91emlkaTkyMkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJGUkExIn0seyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJOWUMxIn1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiNDg5ZmQxN2JiMWM0ZGUxZjFjNmEiLCJzY29wZWRLZXlTZWNyZXQiOiIxZGY4ZmYwZGJiOTcwOTEzMzY5YTVlNThhZjcwNGQ3MjE3OWYwMTA4MWEyOGJkZjglNDM0ZjFmNjhiMTE5YTg4NCIsImV4cCI6MTgyMDA4MTQ5OX0.lq467PNyZDielAMEMSJHPRKsrsLkNpxR5UpjDtkE3wA";
+        // تم تحديث الـ JWT بالمفتاح الجديد الصحيح الذي أرسلته لتجاوز خطأ 401
+        const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIwMzFkNjI4Yy1iOGUzLTQzYmUtOWY2NC0wYzBlODI1Zjc1M2QiLCJlbWFpbCI6Im11c3RhcGhhYm91emlkaTkyMkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJGUkExIn0seyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJOWUMxIn1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiNzIwM2Y4M2U3M2I0MWRiNGNjMGEiLCJzY29wZWRLZXlTZWNyZXQiOiIzMTMwMzE5YmFmNzRkZDkyM2JmZDhkYjg1OTg3NzNhMzNhYmUwYTdlZWMyOTZmNDUxYmZhMTc4ZWI3NzA0MjAwIiwiZXhwIjoxODIwMDk4MjA2fQ.Hlqk3WawF7OCBwRf_9QfxbLEMcMfQtP7mcOffp1HGDg";
 
         async function connectWallet() {
             if (window.ethereum) {
