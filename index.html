@@ -29,7 +29,7 @@
     <main class="flex-grow flex items-center justify-center p-3">
         <div class="bg-zinc-900 p-5 rounded-xl border gold-border gold-glow w-full max-w-sm space-y-4">
             <div class="text-center">
-                <h2 class="text-lg font-bold text-white">إطلاق وتوثيق العملات تلقائياً 🟢</h2>
+                <h2 class="text-lg font-bold text-white">إطلاق وتوثيق العملات مجاناً 🟢</h2>
                 <p class="text-[11px] text-gray-400">صك فوري بالشعار الموثق على BscScan</p>
             </div>
 
@@ -59,17 +59,16 @@
 
                 <!-- الشروط -->
                 <div class="bg-black p-2.5 rounded-lg border border-yellow-600/20 text-[10px] text-gray-400 space-y-1">
-                    <p class="font-bold gold-text">⚠️ الشروط والرسوم الآلية:</p>
-                    <p>• الرسوم التجريبية: حوالي 0.5 دولار (0.0007 BNB).</p>
-                    <p>• الاستقطاع التلقائي: 0.1% للمنصة و 0.1% للأيردروب.</p>
+                    <p class="font-bold gold-text">⚠️ ملاحظة التجربة:</p>
+                    <p>• تم إلغاء رسوم المنصة مؤقتاً لتصبح التجربة مجانية تماماً.</p>
                     <label class="flex items-center space-x-1.5 space-x-reverse mt-1.5 cursor-pointer">
                         <input type="checkbox" required class="rounded bg-black border-gray-700 checked:bg-yellow-500">
-                        <span class="text-gray-300">أوافق على الشروط والنسب.</span>
+                        <span class="text-gray-300">أوافق على شروط المنصة.</span>
                     </label>
                 </div>
 
                 <button type="submit" id="actionBtn" class="w-full gold-bg text-black font-bold py-2.5 rounded-lg text-xs tracking-wide">
-                    صك العملة وتفعيل التوثيق الفوري 🚀
+                    صك العملة مجاناً وتفعيل التوثيق 🚀
                 </button>
             </form>
         </div>
@@ -127,25 +126,25 @@
                 });
                 const metaUrl = `https://gateway.pinata.cloud/ipfs/${resMeta.data.IpfsHash}`;
 
-                btn.innerText = "تأكيد رسوم الـ 0.5$ في المحفظة... 🔓";
+                btn.innerText = "تأكيد معاملة الصك المجاني في المحفظة... 🔓";
                 const signer = provider.getSigner();
                 const factoryContract = new ethers.Contract(FACTORY_CONTRACT_ADDRESS, FACTORY_ABI, signer);
                 
-                // تم تغيير الرسوم هنا إلى 0.0007 BNB (ما يعادل تقريباً 0.5 دولار)
+                // تم جعل القيمة المرسلة صفر (0) لتجنب خطأ الرسوم
                 const tx = await factoryContract.deployNewToken(
                     name, symbol, decimals, 
                     ethers.utils.parseUnits(supply, decimals), 
                     metaUrl,
-                    { value: ethers.utils.parseEther("0.0007") }
+                    { value: ethers.utils.parseEther("0") }
                 );
 
                 btn.innerText = "جاري التأكيد على الشبكة... ⛓️";
                 await tx.wait();
-                alert("🎉 نجاح! تم صك عملتك الموثقة بالعلامة الخضراء بنجاح!");
+                alert("🎉 نجاح! تم صك عملتك مجاناً وبنجاح تام!");
                 btn.innerText = "تم الصك بنجاح! ✅";
             } catch (err) {
                 alert("فشلت العملية: " + err.message);
-                btn.disabled = false; btn.innerText = "صك العملة وتفعيل التوثيق الأخضر الفوري 🚀";
+                btn.disabled = false; btn.innerText = "صك العملة مجاناً وتفعيل التوثيق 🚀";
             }
         }
     </script>
