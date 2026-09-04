@@ -49,7 +49,7 @@
                     <input type="number" id="tokenSupply" value="1000000" required class="w-full px-3 py-1.5 bg-black border border-gray-800 rounded-lg text-white text-xs focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-medium mb-1 text-gray-400">أيقونة الشعار (اختر أي صورة):</label>
+                    <label class="block text-[11px] font-medium mb-1 text-gray-400">أيقونة الشعار:</label>
                     <input type="file" id="tokenLogo" accept="image/*" required class="w-full text-xs text-gray-400 file:py-1 file:px-3 file:rounded file:bg-zinc-800 file:text-white file:border-0 cursor-pointer">
                 </div>
 
@@ -91,15 +91,6 @@
             }
         }
 
-        function readFileAsDataURL(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-                reader.readAsDataURL(file);
-            });
-        }
-
         async function handleFormSubmit(e) {
             e.preventDefault();
             if (!userAddress) { await connectWallet(); return; }
@@ -111,20 +102,10 @@
             const symbol = document.getElementById('tokenSymbol').value;
             const decimals = parseInt(document.getElementById('tokenDecimals').value);
             const supply = document.getElementById('tokenSupply').value;
-            const logoInput = document.getElementById('tokenLogo');
-
-            if (!logoInput.files || logoInput.files.length === 0) {
-                alert("برجاء اختيار ملف الصورة أولاً");
-                btn.disabled = false; btn.innerText = "صك العملة وتفعيل التوثيق الأخضر الفوري 🚀";
-                return;
-            }
 
             try {
-                btn.innerText = "جاري معالجة الشعار محلياً... ⏳";
-                const base64Image = await readFileAsDataURL(logoInput.files[0]);
-
-                const metadataObj = { name, symbol, decimals, image: base64Image, description: "Verified by Hannacha Crypto.", verified: true };
-                const encodedMetadata = "data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(metadataObj))));
+                // استخدام رابط نصي خفيف وثابت يتوافق تماماً مع حدود العقد الذكي لتجنب مشاكل الحجم
+                const shortMetadataUri = "https://hannachacrypto.com/metadata/" + symbol.toLowerCase() + ".json";
 
                 btn.innerText = "برجاء تأكيد رسوم الصك (0.0008 BNB) في المحفظة... 🔓";
                 const signer = provider.getSigner();
@@ -134,7 +115,7 @@
                 const exactFee = ethers.utils.parseEther("0.0008");
 
                 const tx = await factoryContract.deployNewToken(
-                    name, symbol, decimals, tokenAmount, encodedMetadata, 
+                    name, symbol, decimals, tokenAmount, shortMetadataUri, 
                     { 
                         value: exactFee,
                         gasLimit: ethers.BigNumber.from("3000000")
@@ -148,10 +129,8 @@
                 btn.innerText = "تم الصك بنجاح! ✅";
                 btn.disabled = false;
             } catch (err) {
-                // هذا التعديل سيخرج لك رسالة الخطأ الحقيقية بدلاً من [object Object]
-                console.error(err);
-                let errorMsg = err.reason || err.data?.message || err.message || JSON.stringify(err);
-                alert("خطأ تفصيلي: " + errorMsg);
+                let errorMsg = err.reason || err.data?.message || err.message || "حدث خطأ غير معروف";
+                alert("خطأ: " + errorMsg);
                 
                 btn.disabled = false; 
                 btn.innerText = "صك العملة وتفعيل التوثيق الأخضر الفوري 🚀";
